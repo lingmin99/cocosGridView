@@ -3,7 +3,7 @@ cc.Class({
     extends: cc.Component,
 
     properties: {
-        scrollView: cc.ScrollView,
+        gridViewaNode: cc.Node,
     },
 
     // LIFE-CYCLE CALLBACKS:
@@ -29,7 +29,7 @@ cc.Class({
 
     start () {
        
-        let gridView = this.scrollView.getComponent('GridView');
+        let gridView = this.gridViewaNode.getComponent('GridView');
         this.gridView = gridView; 
         this.scheduleOnce(()=>{
             this.onClickChange();

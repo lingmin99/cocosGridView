@@ -23,7 +23,7 @@ cc.Class({
     extends: cc.Component,
 
     properties: {
-        _scrollView: cc.ScrollView,// 滚动视图
+        scrollView: cc.ScrollView,// 滚动视图
         /**
          * !#en direction type
          * !#zh 滚动视图的方向
@@ -50,7 +50,8 @@ cc.Class({
          */
         view: cc.Node,
         scrollContent: cc.Node,// 滚动式图的content
-
+        leftBtn: cc.Button,
+        rightBtn: cc.Button,
         xMax: {
             default: 1,// 水平最多放几个
             visible: (function () {
@@ -179,27 +180,27 @@ cc.Class({
         /** 
          * 这几个值，用来计算按钮的位置，以及实现复用功能
          */
-        this._scrollView = this.node.getComponent(cc.ScrollView);// 获取当前的scrollView
+        // this.scrollView = this.node.getComponent(cc.ScrollView);// 获取当前的scrollView
         this.svHeight = this.node.height;// 滚动视图的高度
         this.svWidth = this.node.width;// 滚动视图的宽度
         this.startY = this.svHeight / 2;// 滚动视图的content的初始内容
         this.startX = this.svWidth / 2;// 滚动视图的content的初始内容
         if (this.direction == Direction.VERTICAL) {// vertical
             this.itemWidth = (this.view.width - this.xSpacing * (this.xMax - 1)) / this.xMax;
-            this.itemHeight = this.gridItemPrefab.data.height * (itemWidth / this.gridItemPrefab.data.width);
+            this.itemHeight = this.gridItemPrefab.data.height * (this.itemWidth / this.gridItemPrefab.data.width);
             this.yMax = Math.ceil(this.view.height / this.itemHeight);
             // this.yMax = Math.ceil(250 / this.itemHeight);
             this._dRealCount = this.yMax + 2;
-            this._scrollView.vertical = true;
-            this._scrollView.horizontal = false;
+            this.scrollView.vertical = true;
+            this.scrollView.horizontal = false;
         } else {// horizontal
             this.itemHeight = (this.view.height - this.ySpacing * (this.yMax - 1)) / this.yMax;
             this.itemWidth = this.gridItemPrefab.data.width * (this.itemHeight / this.gridItemPrefab.data.height);
             this.xMax = Math.ceil((this.view.width + this.xSpacing) / (this.itemWidth + this.xSpacing));
             // this.xMax = Math.ceil(240 / this.itemWidth);
             this._dRealCount = this.xMax + 2;
-            this._scrollView.vertical = false;
-            this._scrollView.horizontal = true;
+            this.scrollView.vertical = false;
+            this.scrollView.horizontal = true;
         }
 
         // 注册事件
@@ -209,8 +210,8 @@ cc.Class({
         eventHandler.component = "GridView";
         eventHandler.handler = "onScrollingCb";
         // eventHandler.emit(["param1", "param2", ....]);
-        if (this._scrollView){
-            let scrollEvents = this._scrollView.scrollEvents;
+        if (this.scrollView){
+            let scrollEvents = this.scrollView.scrollEvents;
             scrollEvents.push(eventHandler);
         }
     },
@@ -272,7 +273,7 @@ cc.Class({
             }
             this.scrollContent.height = this.itemHeight * Math.ceil(this.stageInfoArray.length / this.xMax);
         } else {// horizontal
-            this._scrollView.scrollToLeft(0.1);
+            this.scrollView.scrollToLeft(0.1);
             this.scrollContent.width = (this.itemWidth + this.xSpacing) * Math.ceil(this.stageInfoArray.length / this.yMax);
             this.scrollContent.width = this.scrollContent.width > 0 ? (this.scrollContent.width - this.xSpacing) : this.scrollContent.width;
             this._dRealCount = this.xMax + 1;
@@ -622,6 +623,9 @@ cc.Class({
                     }
                 }
             }
+            this.leftBtn.node.active = -this.startX  - this.scrollContent.x > this.itemWidth;
+            this.rightBtn.node.active = (this.scrollContent.width > this.view.width) && (-this.startX - this.scrollContent.x < this.scrollContent.width - this.view.width);
+          
         }
 
     },
