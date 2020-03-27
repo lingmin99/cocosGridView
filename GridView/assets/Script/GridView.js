@@ -560,7 +560,7 @@ cc.Class({
             }
             this.scrollContent.y;// 根据y值来判断
             // 移动到最底部了，就不再复用了
-            if (-this.scrollContent.x + this.startX + this.itemWidth + this.xSpacing > this.scrollContent.width) {
+            if (-this.scrollContent.x - this.startX + this.itemWidth + this.xSpacing > this.scrollContent.width) {
                 return;
             }
             // 移动到了顶部，也不进行复用
@@ -569,7 +569,7 @@ cc.Class({
                 return;
             }
             var deltX = -(this.scrollContent.x + this.startX);// y轴滑动的相对距离
-            var deltLine = Math.floor(deltX / (this.itemWidth + this.xSpacing));// 相对移动了多少行
+            var deltLine = Math.floor((deltX + this.xSpacing) / (this.itemWidth + this.xSpacing));// 相对移动了多少行
             var canShowNumber = this.yMax * (this.xMax + deltLine);// 滑动过程中，实际上可以展示到多少个关卡
 
             var stageNumber = this.stageInfoArray.length;// 总共有多少的关卡

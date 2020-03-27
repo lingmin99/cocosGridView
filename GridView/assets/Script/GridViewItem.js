@@ -4,6 +4,7 @@ cc.Class({
 
     properties: {
         stageLabel: cc.Label,// 当前是第几关的label显示
+        image: cc.Sprite,
     },
 
     onLoad: function () {
@@ -29,7 +30,25 @@ cc.Class({
         // let stageInfo = data;
         // this.stageInfo = stageInfo;
         // this._stageNum = stageNum;
-        this.stageLabel.string = '第' + (data) + '关';
+        //this.stageLabel.string = '第' + (data) + '关';
+
+        var url = data;//图片路径
+        var container = this.image.getComponent(cc.Sprite);//图片呈现位置
+        this.loadImg(container,url);
+
+    },
+
+    //动态加载图片的方法
+    loadImg: function(container,url){
+        cc.loader.load(url, function (err, texture) {
+            if(!err){
+                var sprite  = new cc.SpriteFrame(texture);
+                container.spriteFrame = sprite;
+            }else{
+                cc.log(err);
+            }
+          
+        });
     },
 
     // 点击按钮
