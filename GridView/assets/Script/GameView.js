@@ -29,7 +29,7 @@ cc.Class({
 
     start () {
        
-        let gridView = this.gridViewaNode.getComponent('GridView');
+        let gridView = this.gridViewaNode.getComponent('gridView');
         this.gridView = gridView; 
         this.scheduleOnce(()=>{
             this.onClickChange();
@@ -62,7 +62,7 @@ cc.Class({
 "https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3544375238,114231233&fm=26&gp=0.jpg",
 "https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3212860924,1428066181&fm=26&gp=0.jpg",
 "https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=2906612143,2745639562&fm=26&gp=0.jpg"];
-        this.gridView.setDataArray(ary,"GridViewItem","setStageInfo",function itemInIndex(itemCell,index,data){
+        this.gridView.setDataArray(ary,"gridViewItem","setStageInfo",function itemInIndex(itemCell,index,data){
             cc.log("index :" + index);
             itemCell.setStageInfo(data);
         });

@@ -10,7 +10,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "GridView",
+    "_name": "gridView",
     "_objFlags": 0,
     "_parent": null,
     "_children": [
@@ -29,10 +29,13 @@
     "_components": [
       {
         "__id__": 38
+      },
+      {
+        "__id__": 39
       }
     ],
     "_prefab": {
-      "__id__": 39
+      "__id__": 40
     },
     "_id": "",
     "_opacity": 255,
@@ -1225,6 +1228,37 @@
   },
   {
     "__type__": "94549mpFclOSorwEKMqYXFY",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "scrollView": {
+      "__id__": 8
+    },
+    "gridItemPrefab": null,
+    "ySpacing": 0,
+    "xSpacing": 0,
+    "view": {
+      "__id__": 10
+    },
+    "scrollContent": {
+      "__id__": 9
+    },
+    "leftBtn": {
+      "__id__": 27
+    },
+    "rightBtn": {
+      "__id__": 35
+    },
+    "xMax": 1,
+    "yMax": 1,
+    "_dRealCount": 0,
+    "_N$direction": 0
+  },
+  {
+    "__type__": "f796792ut9NXpezGy776fvP",
     "_name": "",
     "_objFlags": 0,
     "node": {
