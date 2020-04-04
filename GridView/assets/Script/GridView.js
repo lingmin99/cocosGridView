@@ -57,20 +57,13 @@ cc.Class({
             visible: (function () {
                 return this.direction === Direction.VERTICAL
             }),// 是否可见
-            // visible: true,// 是否可见
-            // notify() {
-            //     this._updateState();
-            // }
         },
         yMax: {
             default: 1,// 垂直最多放几个
             visible: (function () {
                 return this.direction === Direction.HORIZONTAL
             }),// 是否可见
-            // visible: false,// 是否可见
-            // notify() {
-            //     this._updateState();
-            // }
+    
         },
         _dRealCount: 0,// 指定方向上轴实际上存放了几个
 
@@ -90,32 +83,23 @@ cc.Class({
             this.target = this.node;
         }
         cc.log('调用了该方法');
-        // if (this.direction == Direction.VERTICAL) {
-        //     cc.Class.attr(this, "xMax", {
-        //         visible: true,
-        //     })
-        //     cc.Class.attr(this, "yMax", {
-        //         visible: false,
-        //     })
-        // } else {
-        //     cc.Class.attr(this, "xMax", {
-        //         visible: false,
-        //     })
-        //     cc.Class.attr(this, "yMax", {
-        //         visible: true,
-        //     })
-        // }
     },
 
     onLoad() {
         this.onInit();
     },
 
-    clearKeyValue: function(){
-        
-    },
-
     onInit: function () {
+        if(this.direction === Direction.VERTICAL){
+            if(this.leftBtn){
+                this.leftBtn.node.active = false;
+            }
+
+            if(this.rightBtn){
+                this.rightBtn.node.active = false;
+            }
+
+        }
         this.initNodePool();
         this.onLoadStageConfig();
         this._init = true;// 表示已经初始化了
@@ -131,16 +115,20 @@ cc.Class({
     // 创建item
     createItem: function () {
         let item = null;
-        if (this.nodePool) {
-            if (this.nodePool.size() > 0) {
-                item = this.nodePool.get();
-            } else {
-                if (this.gridItemPrefab) {
-                    item = cc.instantiate(this.gridItemPrefab);//克隆制定item
-                    item.setContentSize(cc.size(this.itemWidth, this.itemHeight));
-                }
-            }
+        if (this.gridItemPrefab) {
+            item = cc.instantiate(this.gridItemPrefab);//克隆制定item
+            item.setContentSize(cc.size(this.itemWidth, this.itemHeight));
         }
+        // if (this.nodePool) {
+        //     if (this.nodePool.size() > 0) {
+        //         item = this.nodePool.get();
+        //     } else {
+        //         if (this.gridItemPrefab) {
+        //             item = cc.instantiate(this.gridItemPrefab);//克隆制定item
+        //             item.setContentSize(cc.size(this.itemWidth, this.itemHeight));
+        //         }
+        //     }
+        // }
         return item;
     },
 
@@ -187,7 +175,7 @@ cc.Class({
         this.svHeight = this.node.height;// 滚动视图的高度
         this.svWidth = this.node.width;// 滚动视图的宽度
         this.startY = this.svHeight / 2;// 滚动视图的content的初始内容
-        this.startX = this.svWidth / 2;// 滚动视图的content的初始内容
+        this.startX = this.scrollContent.x;// 滚动视图的content的初始内容
         if (this.direction == Direction.VERTICAL) {// vertical
             this.itemWidth = (this.view.width - this.xSpacing * (this.xMax - 1)) / this.xMax;
             this.itemHeight = this.gridItemPrefab.data.height * (this.itemWidth / this.gridItemPrefab.data.width);
@@ -208,15 +196,15 @@ cc.Class({
 
         // 注册事件
         // 参考文档 https://docs.cocos.com/creator/api/zh/classes/Button.html?q=cc.Component.EventHandler
-        let eventHandler = new cc.Component.EventHandler();
-        eventHandler.target = this.node;
-        eventHandler.component = "gridView";
-        eventHandler.handler = "onScrollingCb";
-        // eventHandler.emit(["param1", "param2", ....]);
-        if (this.scrollView){
-            let scrollEvents = this.scrollView.scrollEvents;
-            scrollEvents.push(eventHandler);
-        }
+        // let eventHandler = new cc.Component.EventHandler();
+        // eventHandler.target = this.node;
+        // eventHandler.component = "gridView";
+        // eventHandler.handler = "onEventScrollView";
+        // // eventHandler.emit(["param1", "param2", ....]);
+        // if (this.scrollView){
+        //     let scrollEvents = this.scrollView.scrollEvents;
+        //     scrollEvents.push(eventHandler);
+        // }
     },
 
     /**
@@ -225,7 +213,8 @@ cc.Class({
      * @param componentName item上挂载的用来处理逻辑的脚本名字
      * @param funcName  对应的处理方法的名字
      */
-    setDataArray: function (array, componentName, funcName, itemCellInIndexCallBack) {
+    setDataArray: function (array, componentName, itemCellInIndexCallBack) {
+
         this.itemCellInIndexFunc = itemCellInIndexCallBack;
         if (!array) {
             return;
@@ -233,90 +222,100 @@ cc.Class({
         if (!this._init) {
             this.onInit();
         }
-        // this.scrollContent.removeAllChildren();
-        this.removeAllNodes();// 通过对象池，移除所有的子节点
+        this.scrollContent.removeAllChildren();
+        //this.removeAllNodes();// 通过对象池，移除所有的子节点
         this.btnArray = [];
         // 关卡模式，每一关的配置
         this.stageInfoArray = array;
 
-        if (this.direction == Direction.VERTICAL) {// vertical
-            /**
-             * 这里讲一下服用的逻辑：
-             * 一个页面横向最多放4个按钮，纵向最多放5个，这是基本条件。
-             * 然后，为了复用，多创建1行，也就是5 + 2 行。
-             * 同时，还要判断按钮的数量，如果小于4 x (5 + 2)的话，就不需要考虑复用了，
-             * 直接就有多少创建多少个。
-             * 如果多余这个数值，就只创建 4 x (5 + 2) 个，这样的话，当滑动的时候，
-             * 页面最多实际上能显示 4 x (5 + 2) 个，因为滑动的时候，会有半个的情况。
-             * 水平滚动的实现逻辑类似
-             */
-            this.scrollView.scrollToTop(0.1);
-            this.scrollContent.height = (this.itemHeight + this.ySpacing) * Math.ceil(this.stageInfoArray.length / this.xMax);
-            this.scrollContent.height = this.scrollContent.height > 0 ? (this.scrollContent.height - this.xSpacing) : this.scrollContent.height;
-            this._dRealCount = this.yMax + 2;
-            var sum = this.xMax * this._dRealCount;
-            if (this.stageInfoArray.length < this.xMax * this._dRealCount) {
-                sum = this.stageInfoArray.length;
-            }
-            var lineNum = 0;// 行数，表示当前创建第几行,第0行开始计算
-            for (var i = 0; i < sum; i++) {
-                let item = this.createItem();
-                let com = item.getComponent(componentName);// 根据名称，获取组件
-                if (!com) {
-                    console.log('no such component named ' + componentName);
-                    return;
-                }
-                this.btnArray.push(com);
-                let x = (item.width + this.xSpacing) * (i % this.xMax + 0.5) - this.scrollContent.width * this.scrollContent.anchorX - this.xSpacing;
-                let y = - item.height * (lineNum + 0.5) - this.ySpacing *lineNum + this.view.height * (1 - this.scrollContent.anchorY);
-                cc.log("y:" + y + "height:" + this.itemHeight);
-                item.setPosition(x, y);
-                this.scrollContent.addChild(item);
-                if(this.itemCellInIndexFunc){
-                    var data = this.stageInfoArray[i];
-                    this.itemCellInIndexFunc(com,i,data);
-                }
-                if ((i + 1) % this.xMax == 0) {// 该换行了
-                    lineNum += 1;
-                }
-            }
-            
-        } else {// horizontal
-            //this.scrollView.scrollToLeft(0.1);
-            this.scrollContent.width = (this.itemWidth + this.xSpacing) * Math.ceil(this.stageInfoArray.length / this.yMax);
-            this.scrollContent.width = this.scrollContent.width > 0 ? (this.scrollContent.width - this.xSpacing) : this.scrollContent.width;
-            this._dRealCount = this.xMax + 1;
-            var sum = this.yMax * this._dRealCount;
-            if (this.stageInfoArray.length < this.yMax * this._dRealCount) {
-                sum = this.stageInfoArray.length;
-            }
-            var lineNum = 0;// 行数，表示当前创建到了第几行
-            for (var i = 0; i < sum; i++) {
-                // let button = cc.instantiate(this.gridItemPrefab);
-                let button = this.createItem();
-                let com = button.getComponent(componentName);// 根据名称，获取组件
-                // this.btnArray.push(button);
-                this.btnArray.push(com);
-                // let x = button.width * (i % this.xMax + 0.5) - this.scrollContent.width * this.scrollContent.anchorX;
-                let x = (button.width + this.xSpacing) * (0.5 + lineNum) - this.view.width * this.scrollContent.anchorX - this.xSpacing;
-                // let y = -button.height * (0.5 + lineNum);
-                let y = - (button.height + this.ySpacing) * (i % this.yMax + 0.5) + this.ySpacing;
-                y += this.scrollContent.height * (1 - this.scrollContent.anchorY);
-                button.setPosition(x, y);
-                this.scrollContent.addChild(button);
-                if(this.itemCellInIndexFunc){
-                    var data = this.stageInfoArray[i];
-                    this.itemCellInIndexFunc(com,i,data);
-                }
-                if ((i + 1) % this.yMax == 0) {// 该换行了
-                    lineNum += 1;
-                }
-            }
-           
+
+        if(this.interval){
+            clearInterval(this.interval);
         }
-
-
-
+        this.scrollView.scrollToOffset(cc.v2(0, 0),0.1);
+        var self = this;
+        this.interval = setInterval(function(){
+            clearInterval(self.interval);
+            if (this.direction == Direction.VERTICAL) {// vertical
+                /**
+                 * 这里讲一下服用的逻辑：
+                 * 一个页面横向最多放4个按钮，纵向最多放5个，这是基本条件。
+                 * 然后，为了复用，多创建1行，也就是5 + 2 行。
+                 * 同时，还要判断按钮的数量，如果小于4 x (5 + 2)的话，就不需要考虑复用了，
+                 * 直接就有多少创建多少个。
+                 * 如果多余这个数值，就只创建 4 x (5 + 2) 个，这样的话，当滑动的时候，
+                 * 页面最多实际上能显示 4 x (5 + 2) 个，因为滑动的时候，会有半个的情况。
+                 * 水平滚动的实现逻辑类似
+                 */
+                self.initVerticalData(componentName);
+            } else {// horizontal
+                self.initHorizontalData(componentName);
+            }
+        },300);
+        
+    },
+    initVerticalData: function(componentName){
+        this.scrollContent.height = (this.itemHeight + this.ySpacing) * Math.ceil(this.stageInfoArray.length / this.xMax);
+        this.scrollContent.height = this.scrollContent.height > 0 ? (this.scrollContent.height - this.xSpacing) : this.scrollContent.height;
+        this._dRealCount = this.yMax + 2;
+        var sum = this.xMax * this._dRealCount;
+        if (this.stageInfoArray.length < this.xMax * this._dRealCount) {
+            sum = this.stageInfoArray.length;
+        }
+        var lineNum = 0;// 行数，表示当前创建第几行,第0行开始计算
+        for (var i = 0; i < sum; i++) {
+            let item = this.createItem();
+            let com = item.getComponent(componentName);// 根据名称，获取组件
+            if (!com) {
+                console.log('no such component named ' + componentName);
+                return;
+            }
+            this.btnArray.push(com);
+            let x = (item.width + this.xSpacing) * (i % this.xMax + 0.5) - this.scrollContent.width * this.scrollContent.anchorX - this.xSpacing;
+            let y = - item.height * (lineNum + 0.5) - this.ySpacing *lineNum + this.view.height * (1 - this.scrollContent.anchorY);
+            item.setPosition(x, y);
+            this.scrollContent.addChild(item);
+            if(this.itemCellInIndexFunc){
+                var data = this.stageInfoArray[i];
+                this.itemCellInIndexFunc(com,i,data);
+            }
+            if ((i + 1) % this.xMax == 0) {// 该换行了
+                lineNum += 1;
+            }
+        }
+    }
+    ,
+    initHorizontalData:function(componentName){
+        this.scrollContent.width = (this.itemWidth + this.xSpacing) * Math.ceil(this.stageInfoArray.length / this.yMax);
+        this.scrollContent.width = this.scrollContent.width > 0 ? (this.scrollContent.width - this.xSpacing) : this.scrollContent.width;
+        this.minContentX = this.scrollContent.x - (this.scrollContent.width >  this.view.width ? (this.scrollContent.width - this.view.width) : 0);
+        this._dRealCount = this.xMax + 2;
+        var sum = this.yMax * this._dRealCount;
+        if (this.stageInfoArray.length < this.yMax * this._dRealCount) {
+            sum = this.stageInfoArray.length;
+        }
+        var lineNum = 0;// 行数，表示当前创建到了第几行
+        for (var i = 0; i < sum; i++) {
+            // let button = cc.instantiate(this.gridItemPrefab);
+            let button = this.createItem();
+            let com = button.getComponent(componentName);// 根据名称，获取组件
+            // this.btnArray.push(button);
+            this.btnArray.push(com);
+            // let x = button.width * (i % this.xMax + 0.5) - this.scrollContent.width * this.scrollContent.anchorX;
+            let x = (button.width + this.xSpacing) * (0.5 + lineNum) - this.view.width * this.scrollContent.anchorX - this.xSpacing;
+            // let y = -button.height * (0.5 + lineNum);
+            let y = - (button.height + this.ySpacing) * (i % this.yMax + 0.5) + this.ySpacing;
+            y += this.scrollContent.height * (1 - this.scrollContent.anchorY);
+            button.setPosition(x, y);
+            this.scrollContent.addChild(button);
+            if(this.itemCellInIndexFunc){
+                var data = this.stageInfoArray[i];
+                this.itemCellInIndexFunc(com,i,data);
+            }
+            if ((i + 1) % this.yMax == 0) {// 该换行了
+                lineNum += 1;
+            }
+        }
     },
 
     /**
@@ -413,11 +412,11 @@ cc.Class({
             }
             this.scrollContent.y;// 根据y值来判断
             // 移动到了顶部，也不进行复用
-            if (this.scrollContent.x > -this.startX) {
+            if (this.scrollContent.x > this.startX) {
                 // debugger;
                 return;
             }
-            var deltX = -(this.scrollContent.x + this.startX);// y轴滑动的相对距离
+            var deltX = -(this.scrollContent.x - this.startX);// y轴滑动的相对距离
             var deltLine = Math.floor(deltX / this.itemWidth);// 相对移动了多少行
             var canShowNumber = this.yMax * (this.xMax + deltLine);// 滑动过程中，实际上可以展示到多少个关卡
 
@@ -477,7 +476,10 @@ cc.Class({
     },
 
     // 监听滚动视图的滚动回调
-    onScrollingCb: function (target, event) {
+    onEventScrollView: function (target, eventType) {
+        if (cc.ScrollView.EventType.SCROLLING == eventType) {
+            console.log('scrolling');
+        }
         // scrollView事件枚举类型地址：  http://docs.cocos.com/creator/api/zh/enums/ScrollView.EventType.html
         if (this.direction === Direction.VERTICAL) {
             var stageCount = this.stageInfoArray.length;
@@ -507,6 +509,7 @@ cc.Class({
             var deltLine = Math.floor((deltY + this.ySpacing) / (this.itemHeight + this.ySpacing));// 相对移动了多少行
             var yuShu = deltLine % this._dRealCount; //跳到下填充数量
             var beiShu = Math.floor(deltLine / this._dRealCount);
+            cc.log("yushu:" + yuShu + " besishu: " + beiShu);
             for (var i = 0; i < this._dRealCount; i++) {
                 for (var j = 0; j < this.xMax; j++) {
                     let btnId = i * this.xMax + j;// 按钮在数组中的固定的Id
@@ -560,39 +563,29 @@ cc.Class({
             }
             this.scrollContent.y;// 根据y值来判断
             // 移动到最底部了，就不再复用了
-            if (-this.scrollContent.x - this.startX + this.itemWidth + this.xSpacing > this.scrollContent.width) {
+            if (-this.scrollContent.x + this.startX + this.itemWidth + this.xSpacing > this.scrollContent.width) {
                 return;
             }
             // 移动到了顶部，也不进行复用
-            if (this.scrollContent.x > -this.startX) {
+            if (this.scrollContent.x > this.startX) {
                 // debugger;
                 return;
             }
             
-            var deltX = -(this.scrollContent.x + this.startX);// y轴滑动的相对距离
+            // var deltX = -(this.scrollContent.x - this.startX);// y轴滑动的相对距离
+            var deltX = Math.abs(this.scrollView.getScrollOffset().x);
             var deltLine = Math.floor((deltX + this.xSpacing) / (this.itemWidth + this.xSpacing));// 相对移动了多少行
-            var canShowNumber = this.yMax * (this.xMax + deltLine);// 滑动过程中，实际上可以展示到多少个关卡
-
-            var stageNumber = this.stageInfoArray.length;// 总共有多少的关卡
-            var realNumber = 0;// 实际上展示出来的按钮数
-            if (stageNumber > canShowNumber) {// 可以展示多少个和总共有多少个比较，谁小用谁
-                realNumber = canShowNumber;
-            } else {
-                realNumber = stageNumber;
-            }
-
+            cc.log("deltx:" + deltX + this.xSpacing + " width: " + this.itemWidth + this.xSpacing);
+            var yuShu = 0;// 余数
+            var beiShu = 0;// 倍数
+            yuShu = deltLine % this._dRealCount;
+            beiShu = Math.floor(deltLine / this._dRealCount);
+            cc.log("yushu:" + yuShu + " besishu: " + beiShu);
             for (var i = 0; i < this._dRealCount; i++) {
                 for (var j = 0; j < this.yMax; j++) {
                     let btnId = i * this.yMax + j;// 按钮在数组中的固定的Id
                     let index;// 表示当前是第几个按钮，同时，对应自己该关的数据的Id
                     let x;// x轴的坐标
-
-                    var yuShu = 0;// 余数
-                    var beiShu = 0;// 倍数
-
-                    yuShu = deltLine % this._dRealCount;
-                    beiShu = Math.floor(deltLine / this._dRealCount);
-
                     if (i < yuShu) {
                         var line = 0;
                         x = ((beiShu + 1) * this._dRealCount + i + 0.5) * (this.itemWidth + this.xSpacing) - this.xSpacing;
@@ -624,8 +617,11 @@ cc.Class({
                     }
                 }
             }
-            this.leftBtn.node.active = -this.startX  - this.scrollContent.x > this.itemWidth;
-            this.rightBtn.node.active = (this.scrollContent.width > this.view.width) && (-this.startX - this.scrollContent.x < this.scrollContent.width - this.view.width);
+            cc.log("offsetX: " + this.scrollView.getScrollOffset().x);
+            this.leftBtn.node.active = !(this.scrollView.getScrollOffset().x > -this.itemWidth * 0.5);
+            this.rightBtn.node.active = !(Math.abs(this.scrollView.getScrollOffset().x) > this.scrollView.getMaxScrollOffset().x - this.itemWidth * 0.5);
+            // this.leftBtn.node.active = this.startX  - this.scrollContent.x > this.itemWidth;
+            // this.rightBtn.node.active = (this.scrollContent.width > this.view.width) && (this.startX - this.scrollContent.x < this.scrollContent.width - this.view.width);
           
         }
 
@@ -642,5 +638,30 @@ cc.Class({
         if (this.nodePool) {
             this.nodePool.clear();
         }
-    }
+    },
+    leftBtnAction(){
+        var x = this.scrollContent.x + this.view.width;
+        if(x > this.startX){
+            this.scrollView.scrollToLeft(0.1)
+        }else{
+            var rate = 
+            this.scrollView.scrollTo(cc.v2({x: x ,y:this.scrollContent.y}),0.5);
+        }
+
+    },
+
+    onClickLeft() {
+        var offset = this.scrollView.getScrollOffset()
+        offset.x = Math.abs(offset.x) - this.scrollView.node.width
+        if (offset.x < 0) offset.x = 0
+        this.scrollView.scrollToOffset(offset, 0.5)
+    },
+    onClickRight() {
+        var offset = this.scrollView.getScrollOffset()
+        offset.x = Math.abs(offset.x) + this.scrollView.node.width
+        if (offset.x > this.scrollView.getMaxScrollOffset().x) {
+            offset.x = this.scrollView.getMaxScrollOffset().x
+        }
+        this.scrollView.scrollToOffset(cc.v2(offset.x, 0), 0.5)
+    },
 });

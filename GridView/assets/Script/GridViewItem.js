@@ -40,7 +40,7 @@ cc.Class({
 
     //动态加载图片的方法
     loadImg: function(container,url){
-        cc.loader.load(url, function (err, texture) {
+        cc.loader.load(url,function (err, texture) {
             if(!err){
                 var sprite  = new cc.SpriteFrame(texture);
                 container.spriteFrame = sprite;
