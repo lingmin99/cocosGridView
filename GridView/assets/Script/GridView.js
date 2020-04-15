@@ -247,8 +247,8 @@ cc.Class({
                 return;
             }
             this._itemArray.push(com);
-            let x = (item.width + this.xSpacing) * (i % this.xMax + 0.5) - this.scrollContent.width * this.scrollContent.anchorX - this.xSpacing;
-            let y = - item.height * (lineNum + 0.5) - this.ySpacing *lineNum + this.view.height * (1 - this.scrollContent.anchorY);
+            let x = (this._itemWidth + this.xSpacing) * (i % this.xMax) + 0.5 * this._itemWidth - this.scrollContent.width * this.scrollContent.anchorX;
+            let y = - (this._itemHeight + this.ySpacing) * lineNum - 0.5 * this._itemHeight + this.view.height * (1 - this.scrollContent.anchorY);
             item.setPosition(x, y);
             this.scrollContent.addChild(item);
             if(this._itemCellInIndexFunc){

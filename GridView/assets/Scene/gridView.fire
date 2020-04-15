@@ -503,7 +503,7 @@
     "target": {
       "__id__": 3
     },
-    "component": "gridView",
+    "component": "GridView",
     "handler": "onEventScrollView",
     "customEventData": ""
   },
