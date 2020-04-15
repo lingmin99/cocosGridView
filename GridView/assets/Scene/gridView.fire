@@ -1140,8 +1140,8 @@
     "gridItemPrefab": {
       "__uuid__": "7ce365e6-ee39-4cec-b073-f3379a382a1a"
     },
-    "ySpacing": 1,
-    "xSpacing": 1,
+    "ySpacing": 20,
+    "xSpacing": 20,
     "view": {
       "__id__": 5
     },
@@ -1156,8 +1156,9 @@
     },
     "xMax": 3,
     "yMax": 2,
+    "reuseCell": true,
     "_dRealCount": 0,
-    "_N$direction": 1
+    "_N$direction": 0
   },
   {
     "__type__": "cc.Widget",
