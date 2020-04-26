@@ -114,7 +114,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "gridView",
+    "_name": "fabGridView",
     "_objFlags": 0,
     "_parent": {
       "__id__": 2
@@ -389,10 +389,8 @@
     "root": {
       "__id__": 3
     },
-    "asset": {
-      "__uuid__": "4d4c5df2-dc46-43ee-8422-9a6372227551"
-    },
-    "fileId": "39a3qVunpBdq7cYcBjucLy",
+    "asset": null,
+    "fileId": "a60kaUh/BLp7h6+4Ginz6D",
     "sync": false
   },
   {
@@ -440,10 +438,8 @@
     "root": {
       "__id__": 3
     },
-    "asset": {
-      "__uuid__": "4d4c5df2-dc46-43ee-8422-9a6372227551"
-    },
-    "fileId": "49l60ztlRNVrHF/8hVkzK3",
+    "asset": null,
+    "fileId": "actyrVObJHdKtBB2nMKwT/",
     "sync": false
   },
   {
@@ -503,7 +499,7 @@
     "target": {
       "__id__": 3
     },
-    "component": "GridView",
+    "component": "fabGridView",
     "handler": "onEventScrollView",
     "customEventData": ""
   },
@@ -538,10 +534,8 @@
     "root": {
       "__id__": 3
     },
-    "asset": {
-      "__uuid__": "4d4c5df2-dc46-43ee-8422-9a6372227551"
-    },
-    "fileId": "41kYBGReRGZIB35iyBTCL4",
+    "asset": null,
+    "fileId": "8aYirbwjFEKpyWtBm3+4nQ",
     "sync": false
   },
   {
@@ -689,10 +683,8 @@
     "root": {
       "__id__": 3
     },
-    "asset": {
-      "__uuid__": "4d4c5df2-dc46-43ee-8422-9a6372227551"
-    },
-    "fileId": "b34SChsrtNe7GGBWxNNSaa",
+    "asset": null,
+    "fileId": "8fKEKQkZVKM6SUo4X97orJ",
     "sync": false
   },
   {
@@ -794,7 +786,7 @@
     "target": {
       "__id__": 3
     },
-    "component": "gridView",
+    "component": "fabGridView",
     "handler": "onClickLeft",
     "customEventData": ""
   },
@@ -829,10 +821,8 @@
     "root": {
       "__id__": 3
     },
-    "asset": {
-      "__uuid__": "4d4c5df2-dc46-43ee-8422-9a6372227551"
-    },
-    "fileId": "06/lHGvoxCi4t85nLPTmDv",
+    "asset": null,
+    "fileId": "8dukvpQm9AubSt4MRKwsX7",
     "sync": false
   },
   {
@@ -980,10 +970,8 @@
     "root": {
       "__id__": 3
     },
-    "asset": {
-      "__uuid__": "4d4c5df2-dc46-43ee-8422-9a6372227551"
-    },
-    "fileId": "e1gSIb3eVOaKiP+6ICkeGK",
+    "asset": null,
+    "fileId": "07u7encw5OiKkqG8Vxg1Aj",
     "sync": false
   },
   {
@@ -1085,7 +1073,7 @@
     "target": {
       "__id__": 3
     },
-    "component": "gridView",
+    "component": "fabGridView",
     "handler": "onClickRight",
     "customEventData": ""
   },
@@ -1120,10 +1108,8 @@
     "root": {
       "__id__": 3
     },
-    "asset": {
-      "__uuid__": "4d4c5df2-dc46-43ee-8422-9a6372227551"
-    },
-    "fileId": "37qBea74BEH41vTgupHrOp",
+    "asset": null,
+    "fileId": "bf5Pc9Hn1GyYxMNNJHWv4L",
     "sync": false
   },
   {
@@ -1140,8 +1126,14 @@
     "gridItemPrefab": {
       "__uuid__": "7ce365e6-ee39-4cec-b073-f3379a382a1a"
     },
-    "ySpacing": 20,
-    "xSpacing": 20,
+    "left": 25,
+    "right": 25,
+    "top": 10,
+    "bottom": 10,
+    "spacingY": 10,
+    "spacingX": 25,
+    "fitWidth": false,
+    "fitHeight": false,
     "view": {
       "__id__": 5
     },
@@ -1158,7 +1150,7 @@
     "yMax": 2,
     "reuseCell": true,
     "_dRealCount": 0,
-    "_N$direction": 0
+    "_N$direction": 1
   },
   {
     "__type__": "cc.Widget",
@@ -1191,9 +1183,7 @@
     "root": {
       "__id__": 3
     },
-    "asset": {
-      "__uuid__": "4d4c5df2-dc46-43ee-8422-9a6372227551"
-    },
+    "asset": null,
     "fileId": "08Auhk9VxGjLAxDgQCUN7D",
     "sync": false
   },

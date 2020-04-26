@@ -29,7 +29,7 @@ cc.Class({
 
     start () {
        
-        let gridView = this.gridViewaNode.getComponent('GridView');
+        let gridView = this.gridViewaNode.getComponent('fabGridView');
         this.gridView = gridView; 
         this.scheduleOnce(()=>{
             this.onClickChange();

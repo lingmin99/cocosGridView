@@ -41,9 +41,52 @@ cc.Class({
         },
         gridItemPrefab: cc.Prefab,// 每一关的按钮
 
-        ySpacing: 0, // 纵向间距
-
-        xSpacing: 0, // 横向间距
+        left: {
+            default: 0,
+            type: cc.Float,
+            tooltip: "左间距",
+        }, 
+        right: {
+            default: 0,
+            type: cc.Float,
+            tooltip: "右间距",
+        }, 
+        top: {
+            default: 0,
+            type: cc.Float,
+            tooltip: "下间距",
+        }, 
+        bottom: {
+            default: 0,
+            type: cc.Float,
+            tooltip: "上间距",
+        }, 
+        spacingX: {
+            default: 0,
+            type: cc.Float,
+            tooltip: "横向间距"
+        },
+        spacingY: {
+            default: 0,
+            type: cc.Float,
+            tooltip: "纵向间距",
+        },  // 纵向间距
+        fitWidth:{
+            default: false,
+            type: Boolean,
+            tooltip: "横向滚动时，适配宽度，则高度变化时，item宽度将随之变化",
+            visible: (function(){
+                return this.direction === Direction.HORIZONTAL
+            }),
+        },
+        fitHeight:{
+            default: false,
+            type: Boolean,
+            tooltip: "纵向滚动时，适配高度，则高度变化时，item高度将随之变化",
+            visible: (function(){
+                return this.direction === Direction.VERTICAL
+            }),
+        },
         /**
          * !#en view of scrollView
          * !#zh 滚动视图里面的view
@@ -60,6 +103,7 @@ cc.Class({
         },
         yMax: {
             default: 1,// 垂直最多放几个
+            type: cc.Integer,
             visible: (function () {
                 return this.direction === Direction.HORIZONTAL
             }),// 是否可见
@@ -154,17 +198,17 @@ cc.Class({
         this.startY = this.svHeight / 2;// 滚动视图的content的初始内容
         this.startX = this.scrollContent.x;// 滚动视图的content的初始内容
         if (this.direction == Direction.VERTICAL) {// vertical
-            this._itemWidth = (this.view.width - this.xSpacing * (this.xMax - 1)) / this.xMax;
-            this._itemHeight = this.gridItemPrefab.data.height * (this._itemWidth / this.gridItemPrefab.data.width);
-            this.yMax = Math.ceil(this.view.height / (this._itemHeight + this.ySpacing));
+            this._itemWidth = (this.view.width - this.spacingX * (this.xMax - 1) - this.left - this.right) / this.xMax;
+            this._itemHeight = this.fitHeight ? this.gridItemPrefab.data.height * (this._itemWidth / this.gridItemPrefab.data.width) : this.gridItemPrefab.data.height;
+            this.yMax = Math.ceil(this.view.height / (this._itemHeight + this.spacingY));
             // this.yMax = Math.ceil(250 / this.itemHeight);
             this._dRealCount = this.yMax + 2;
             this.scrollView.vertical = true;
             this.scrollView.horizontal = false;
         } else {// horizontal
-            this._itemHeight = (this.view.height - this.ySpacing * (this.yMax - 1)) / this.yMax;
-            this._itemWidth = this.gridItemPrefab.data.width * (this._itemHeight / this.gridItemPrefab.data.height);
-            this.xMax = Math.ceil(this.view.width / (this._itemWidth + this.xSpacing));
+            this._itemHeight = (this.view.height - this.spacingY * (this.yMax - 1) - this.top - this.bottom) / this.yMax;
+            this._itemWidth = this.fitWidth ? this.gridItemPrefab.data.width * (this._itemHeight / this.gridItemPrefab.data.height) : this.gridItemPrefab.data.width;
+            this.xMax = Math.ceil(this.view.width / (this._itemWidth + this.spacingX));
             // this.xMax = Math.ceil(240 / this.itemWidth);
             this._dRealCount = this.xMax + 2;
             this.scrollView.vertical = false;
@@ -231,8 +275,8 @@ cc.Class({
         
     },
     initVerticalData: function(componentName){
-        this.scrollContent.height = (this._itemHeight + this.ySpacing) * Math.ceil(this._dataArray.length / this.xMax);
-        this.scrollContent.height = this.scrollContent.height > 0 ? (this.scrollContent.height - this.xSpacing) : this.scrollContent.height;
+        this.scrollContent.height = (this._itemHeight + this.spacingY) * Math.ceil(this._dataArray.length / this.xMax);
+        this.scrollContent.height = this.scrollContent.height > 0 ? (this.scrollContent.height - this.spacingX) : this.scrollContent.height;
         this._dRealCount = this.yMax + 2;
         var sum = this.xMax * this._dRealCount;
         if (this._dataArray.length < this.xMax * this._dRealCount) {
@@ -247,8 +291,8 @@ cc.Class({
                 return;
             }
             this._itemArray.push(com);
-            let x = (this._itemWidth + this.xSpacing) * (i % this.xMax) + 0.5 * this._itemWidth - this.scrollContent.width * this.scrollContent.anchorX;
-            let y = - (this._itemHeight + this.ySpacing) * lineNum - 0.5 * this._itemHeight + this.view.height * (1 - this.scrollContent.anchorY);
+            let x = (this._itemWidth + this.spacingX) * (i % this.xMax) + 0.5 * this._itemWidth - this.scrollContent.width * this.scrollContent.anchorX + this.left;
+            let y = - (this._itemHeight + this.spacingY) * lineNum - 0.5 * this._itemHeight + this.view.height * (1 - this.scrollContent.anchorY) - this.top;
             item.setPosition(x, y);
             this.scrollContent.addChild(item);
             if(this._itemCellInIndexFunc){
@@ -263,7 +307,7 @@ cc.Class({
     ,
     initHorizontalData:function(componentName){
         var maxLine =  Math.ceil(this._dataArray.length / this.yMax);
-        this.scrollContent.width = (this._itemWidth + this.xSpacing) * maxLine - this.xSpacing;
+        this.scrollContent.width = (this._itemWidth + this.spacingX) * maxLine - this.spacingX;
         this.minContentX = this.scrollContent.x - (this.scrollContent.width >  this.view.width ? (this.scrollContent.width - this.view.width) : 0);
         this._dRealCount = this.xMax + 2;
         var sum = this.yMax * this._dRealCount;
@@ -277,9 +321,9 @@ cc.Class({
             let com = button.getComponent(componentName);// 根据名称，获取组件
             this._itemArray.push(com);
             // let x = button.width * (i % this.xMax + 0.5) - this.scrollContent.width * this.scrollContent.anchorX;
-            let x = (this._itemWidth + this.xSpacing) * lineNum + this._itemWidth * 0.5 - this.view.width * this.scrollContent.anchorX;
+            let x = (this._itemWidth + this.spacingX) * lineNum + this._itemWidth * 0.5 - this.view.width * this.scrollContent.anchorX + this.left;
             // let y = -button.height * (0.5 + lineNum);
-            let y = - (this._itemHeight + this.ySpacing) * (i % this.yMax) - 0.5 * this._itemHeight;
+            let y = - (this._itemHeight + this.spacingY) * (i % this.yMax) - 0.5 * this._itemHeight - this.top;
             y += this.scrollContent.height * (1 - this.scrollContent.anchorY);
             button.setPosition(x, y);
             this.scrollContent.addChild(button);
@@ -322,54 +366,11 @@ cc.Class({
 
             if(this.reuseCell){
                 this._loadMoreItemCell();
-                return;
+            }else{
+                this._reuseItemCellLoadVertical();
             }
      
-            // y轴滑动的部分都是不可见，例如向上滑动1行，实际创建了7行用与显示， 那么第0行进入不可见区域就用于显示第八行，第0行用于显示的坐标就是this.itemHeight * (7 + 1)
-            var deltY = (this.scrollContent.y - this.startY);// y轴滑动的相对距离
-            var deltLine = Math.floor((deltY + this.ySpacing) / (this._itemHeight + this.ySpacing));// 相对移动了多少行
-            var yuShu = deltLine % this._dRealCount; //跳到下填充数量
-            var beiShu = Math.floor(deltLine / this._dRealCount);
-            for (var i = 0; i < this._dRealCount; i++) {
-                for (var j = 0; j < this.xMax; j++) {
-                    let btnId = i * this.xMax + j;// 按钮在数组中的固定的Id
-                    let index;// 表示当前是第几个按钮，同时，对应自己该关的数据的Id
-                    let y;// y轴的坐标
-                    if (i < yuShu) { // 移动底部显示的行
-                        var line = 0;
-                        // index = line * this.xMax + j;
-                        // y = -(line + 0.5) * this.itemHeight;
-                        y = -((beiShu + 1) * this._dRealCount + i + 0.5) * (this._itemHeight + this.ySpacing) - this.ySpacing;
-                        index = ((beiShu + 1) * this._dRealCount + i) * this.xMax + j;
-                    } else {
-                        y = -(beiShu * this._dRealCount + i + 0.5) * (this._itemHeight + this.ySpacing) - this.ySpacing;
-                        index = (beiShu * this._dRealCount + i) * this.xMax + j;
-                    }
-                    if (index >= stageCount) {// 表示已经到了最后关，那么就不移动按钮了
-                        continue;
-                    }
-                    // 设置按钮的y轴坐标
-                    // let btn = this._itemArray[btnId];
-                    let com = this._itemArray[btnId];
-                    if (!com) {
-                        continue;
-                    }
-                    if (com.node) {
-                        // 防止多次设置，消耗性能
-                        if (com.node.y == y) {
-                            continue;
-                        }
-                        com.node.setPositionY(y);
-                    }
-                    let info = this._dataArray[index];
-                    // 设置数据
-                    let stageInfo = this._dataArray[index];
-                    if(this._itemCellInIndexFunc){
-                        
-                        this._itemCellInIndexFunc(com,index,stageInfo);
-                    }
-                }
-            }
+            
         } else {
             var stageCount = this._dataArray.length;
             /**
@@ -382,7 +383,7 @@ cc.Class({
             }
             this.scrollContent.y;// 根据y值来判断
             // 移动到最底部了，就不再复用了
-            if (-this.scrollContent.x + this.startX + this._itemWidth + this.xSpacing > this.scrollContent.width) {
+            if (-this.scrollContent.x + this.startX + this._itemWidth + this.spacingX > this.scrollContent.width) {
                 return;
             }
             // 移动到了顶部，也不进行复用
@@ -392,11 +393,70 @@ cc.Class({
             }
             if(this.reuseCell){
                 this._loadMoreItemCell();
-                return;
+            }else{
+                this._reuseItemCellLoadHorizontal();
             }
             
-            var deltX = Math.abs(this.scrollView.getScrollOffset().x);
-            var deltLine = Math.floor((deltX + this.xSpacing) / (this._itemWidth + this.xSpacing));// 相对移动了多少行
+            
+            this.leftBtn.node.active = !(this.scrollView.getScrollOffset().x > -this._itemWidth * 0.5);
+            this.rightBtn.node.active = !(Math.abs(this.scrollView.getScrollOffset().x) > this.scrollView.getMaxScrollOffset().x - this._itemWidth * 0.5);
+          
+        }
+
+    },
+
+    _reuseItemCellLoadVertical(){
+        // y轴滑动的部分都是不可见，例如向上滑动1行，实际创建了7行用与显示， 那么第0行进入不可见区域就用于显示第八行，第0行用于显示的坐标就是this.itemHeight * (7 + 1)
+        var deltY = (this.scrollContent.y - this.startY);// y轴滑动的相对距离
+        var deltLine = Math.floor((deltY + this.spacingY) / (this._itemHeight + this.spacingY));// 相对移动了多少行
+        var yuShu = deltLine % this._dRealCount; //跳到下填充数量
+        var beiShu = Math.floor(deltLine / this._dRealCount);
+        for (var i = 0; i < this._dRealCount; i++) {
+            for (var j = 0; j < this.xMax; j++) {
+                let btnId = i * this.xMax + j;// 按钮在数组中的固定的Id
+                let index;// 表示当前是第几个按钮，同时，对应自己该关的数据的Id
+                let y;// y轴的坐标
+                if (i < yuShu) { // 移动底部显示的行
+                    var line = 0;
+                    // index = line * this.xMax + j;
+                    // y = -(line + 0.5) * this.itemHeight;
+                    y = -((beiShu + 1) * this._dRealCount + i + 0.5) * (this._itemHeight + this.spacingY) - this.spacingY - this.top;
+                    index = ((beiShu + 1) * this._dRealCount + i) * this.xMax + j;
+                } else {
+                    y = -(beiShu * this._dRealCount + i + 0.5) * (this._itemHeight + this.spacingY) - this.spacingY - this.top;
+                    index = (beiShu * this._dRealCount + i) * this.xMax + j;
+                }
+                if (index >= stageCount) {// 表示已经到了最后关，那么就不移动按钮了
+                    continue;
+                }
+                // 设置按钮的y轴坐标
+                // let btn = this._itemArray[btnId];
+                let com = this._itemArray[btnId];
+                if (!com) {
+                    continue;
+                }
+                if (com.node) {
+                    // 防止多次设置，消耗性能
+                    if (com.node.y == y) {
+                        continue;
+                    }
+                    com.node.setPositionY(y);
+                }
+                let info = this._dataArray[index];
+                // 设置数据
+                let stageInfo = this._dataArray[index];
+                if(this._itemCellInIndexFunc){
+                    
+                    this._itemCellInIndexFunc(com,index,stageInfo);
+                }
+            }
+        }
+    },
+
+    //重复使用itemCell加载横向滚动内容
+    _reuseItemCellLoadHorizontal(){
+        var deltX = Math.abs(this.scrollView.getScrollOffset().x);
+            var deltLine = Math.floor((deltX + this.spacingX) / (this._itemWidth + this.spacingX));// 相对移动了多少行
             var yuShu = 0;// 余数
             var beiShu = 0;// 倍数
             yuShu = deltLine % this._dRealCount;
@@ -408,10 +468,10 @@ cc.Class({
                     let x;// x轴的坐标
                     if (i < yuShu) {
                         var line = 0;
-                        x = ((beiShu + 1) * this._dRealCount + i + 0.5) * (this._itemWidth + this.xSpacing) - this.xSpacing;
+                        x = ((beiShu + 1) * this._dRealCount + i + 0.5) * (this._itemWidth + this.spacingX) - this.spacingX + this.left;
                         index = ((beiShu + 1) * this._dRealCount + i) * this.yMax + j;
                     } else {
-                        x = (beiShu * this._dRealCount + i + 0.5) * (this._itemWidth + this.xSpacing) - this.xSpacing;
+                        x = (beiShu * this._dRealCount + i + 0.5) * (this._itemWidth + this.spacingX) - this.spacingX + this.left;
                         index = (beiShu * this._dRealCount + i) * this.yMax + j;
                     }
                     if (index >= stageCount) {// 表示已经到了最后关，那么就不移动按钮了
@@ -437,11 +497,6 @@ cc.Class({
                     }
                 }
             }
-            this.leftBtn.node.active = !(this.scrollView.getScrollOffset().x > -this._itemWidth * 0.5);
-            this.rightBtn.node.active = !(Math.abs(this.scrollView.getScrollOffset().x) > this.scrollView.getMaxScrollOffset().x - this._itemWidth * 0.5);
-          
-        }
-
     },
 
     //
@@ -458,7 +513,7 @@ cc.Class({
             const isRight = _curOffset.x < this._lastOffset.x; //是否向右加载更多内容
             if(isRight){
                 var deltX = Math.abs(_curOffset.x);
-                var canLoadItemCellCount = Math.ceil((deltX + this.view.width+ this.xSpacing) / (this._itemWidth + this.xSpacing)) * this.yMax;
+                var canLoadItemCellCount = Math.ceil((deltX + this.view.width+ this.spacingX) / (this._itemWidth + this.spacingX)) * this.yMax;
                 var curItemCount = this._itemArray.length;
                 if(canLoadItemCellCount > this._dataArray.length){
                     canLoadItemCellCount = this._dataArray.length;
@@ -466,8 +521,8 @@ cc.Class({
                 //创建从未加载的
                 if(curItemCount < canLoadItemCellCount){
                     for(var i = curItemCount; i < canLoadItemCellCount; i++){
-                        var x = Math.floor(i / this.yMax) * (this._itemWidth + this.xSpacing) + this._itemWidth * 0.5;
-                        var y = -i % this.yMax * (this._itemHeight + this.ySpacing) - this._itemHeight * 0.5;
+                        var x = Math.floor(i / this.yMax) * (this._itemWidth + this.spacingX) + this._itemWidth * 0.5 + this.left;
+                        var y = -i % this.yMax * (this._itemHeight + this.spacingY) - this._itemHeight * 0.5 - this.top;
                         var item = this.createItem();
                         let com = item.getComponent(this._componentName);
                         com.node.setPosition(x,y);
@@ -495,7 +550,7 @@ cc.Class({
             const isDown = _curOffset.y > this._lastOffset.y; //是否向下加载更多内容
             if(isDown){
                 var deltY = Math.abs(_curOffset.y);
-                var canLoadItemCellCount = Math.ceil((deltY + this.view.height+ this.ySpacing) / (this._itemHeight + this.ySpacing)) * this.xMax;
+                var canLoadItemCellCount = Math.ceil((deltY + this.view.height+ this.spacingY) / (this._itemHeight + this.spacingY)) * this.xMax;
                 var curItemCount = this._itemArray.length;
                 if(canLoadItemCellCount > this._dataArray.length){
                     canLoadItemCellCount = this._dataArray.length;
@@ -503,8 +558,8 @@ cc.Class({
                 //创建从未加载的
                 if(curItemCount < canLoadItemCellCount){
                     for(var i = curItemCount; i < canLoadItemCellCount; i++){
-                        var y = -Math.floor(i / this.xMax) * (this._itemHeight + this.ySpacing) - this._itemHeight * 0.5;
-                        var x = i % this.xMax * (this._itemWidth + this.xSpacing) + this._itemWidth * 0.5;
+                        var y = -Math.floor(i / this.xMax) * (this._itemHeight + this.spacingY) - this._itemHeight * 0.5 - this.top;
+                        var x = i % this.xMax * (this._itemWidth + this.spacingX) + this._itemWidth * 0.5 + this.left;
                         var item = this.createItem();
                         let com = item.getComponent(this._componentName);
                         com.node.setPosition(x,y);
@@ -541,11 +596,11 @@ cc.Class({
         this._visibleViewMinY = -_offset.y;
         this._visibleViewMaxY = - _offset.y - this.view.width;
         if(this.direction === Direction.HORIZONTAL){
-            this._visibleViewMinLine = Math.floor((this._visibleViewMinX + this.xSpacing) / (this._itemWidth + this.xSpacing));
-            this._visibleViewMaxLine = Math.floor((this._visibleViewMaxX + this.xSpacing) / (this._itemWidth + this.xSpacing));
+            this._visibleViewMinLine = Math.floor((this._visibleViewMinX + this.spacingX) / (this._itemWidth + this.spacingX));
+            this._visibleViewMaxLine = Math.floor((this._visibleViewMaxX + this.spacingX) / (this._itemWidth + this.spacingX));
         }else{
-            this._visibleViewMinLine = Math.floor((this._visibleViewMinY + this.xSpacing) / (this._itemHeight + this.xSpacing));
-            this._visibleViewMaxLine = Math.floor((this._visibleViewMaxY + this.xSpacing) / (this._itemHeight + this.xSpacing));
+            this._visibleViewMinLine = Math.floor((this._visibleViewMinY + this.spacingX) / (this._itemHeight + this.spacingX));
+            this._visibleViewMaxLine = Math.floor((this._visibleViewMaxY + this.spacingX) / (this._itemHeight + this.spacingX));
         }
     },
 
@@ -557,11 +612,11 @@ cc.Class({
         this._lastVisibleViewMinY = -_offset.y;
         this._lastVisibleViewMaxY = - _offset.y - this.view.height;
         if(this.direction === Direction.HORIZONTAL){
-            this._lastVisibleViewMinLine = Math.floor((this._lastVisibleViewMinX + this.xSpacing) / (this._itemWidth + this.xSpacing));
-            this._lastVisibleViewMaxLine = Math.floor((this._lastVisibleViewMaxX + this.xSpacing) / (this._itemWidth + this.xSpacing));
+            this._lastVisibleViewMinLine = Math.floor((this._lastVisibleViewMinX + this.spacingX) / (this._itemWidth + this.spacingX));
+            this._lastVisibleViewMaxLine = Math.floor((this._lastVisibleViewMaxX + this.spacingX) / (this._itemWidth + this.spacingX));
         }else{
-            this._lastVisibleViewMinLine = Math.floor((this._lastVisibleViewMinY + this.xSpacing) / (this._itemHeight + this.xSpacing));
-            this._lastVisibleViewMaxLine = Math.floor((this._lastVisibleViewMaxY + this.xSpacing) / (this._itemHeight + this.xSpacing));
+            this._lastVisibleViewMinLine = Math.floor((this._lastVisibleViewMinY + this.spacingX) / (this._itemHeight + this.spacingX));
+            this._lastVisibleViewMaxLine = Math.floor((this._lastVisibleViewMaxY + this.spacingX) / (this._itemHeight + this.spacingX));
         }
     },
 
@@ -597,13 +652,13 @@ cc.Class({
 
     onClickLeft() {
         var offset = this.scrollView.getScrollOffset()
-        offset.x = Math.abs(offset.x) - this.scrollView.node.width
+        offset.x = Math.abs(offset.x) - this.scrollView.node.width + this.left
         if (offset.x < 0) offset.x = 0
         this.scrollView.scrollToOffset(offset, 0.5)
     },
     onClickRight() {
         var offset = this.scrollView.getScrollOffset()
-        offset.x = Math.abs(offset.x) + this.scrollView.node.width
+        offset.x = Math.abs(offset.x) + this.scrollView.node.width - this.left
         if (offset.x > this.scrollView.getMaxScrollOffset().x) {
             offset.x = this.scrollView.getMaxScrollOffset().x
         }
